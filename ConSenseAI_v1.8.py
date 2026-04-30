@@ -3044,18 +3044,6 @@ def post_reflection_on_recent_bot_threads(n=10):
         reflection = fact_check(summary_context, tweet_id="reflection_summary", context=context, generate_only=True, enable_extended_thinking=args.enable_extended_thinking)
         print(f"[Reflection] Generated text: {reflection}")
         
-        # Sync followed users from API to keep cache accurate
-        try:
-            sync_followed_users_from_api()
-        except Exception as e:
-            print(f"[Reflection] Error during follower sync: {e}")
-        
-        # Check for users to auto-follow during reflection cycle
-        try:
-            check_and_follow_active_users(min_replies=args.follow_threshold)
-        except Exception as e:
-            print(f"[Reflection] Error during auto-follow check: {e}")
-        
         if reflection and not args.dryrun:
             # Post as a standalone tweet (not a reply)
             try:
@@ -3085,7 +3073,19 @@ def post_reflection_on_recent_bot_threads(n=10):
                     return str(created_id)
             except Exception as e:
                 print(f"[Reflection] Error posting reflection: {e}")
-            return None
+            
+        # Sync followed users and auto-follow after posting (not before, to avoid connection drops delaying the post)
+        try:
+            sync_followed_users_from_api()
+        except Exception as e:
+            print(f"[Reflection] Error during follower sync: {e}")
+        
+        try:
+            check_and_follow_active_users(min_replies=args.follow_threshold)
+        except Exception as e:
+            print(f"[Reflection] Error during auto-follow check: {e}")
+
+        return None
     except Exception as e:
         print(f"[Reflection] Unexpected error: {e}")
         return None
