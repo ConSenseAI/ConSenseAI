@@ -2336,7 +2336,7 @@ def fact_check(tweet_text, tweet_id, context=None, generate_only=False, verbose=
         {"name": "gpt-5.4-mini", "client": openai_client, "api": "openai"},
         {"name": "claude-haiku-4-5", "client": anthropic_client, "api": "anthropic"},
         #higher tier (index 3-5)
-        {"name": "grok-4.20-multi-agent-0309", "client": xai_client, "api": "xai"},
+        {"name": "grok-4.3", "client": xai_client, "api": "xai"},
         {"name": "gpt-5.5", "client": openai_client, "api": "openai"},
         {"name": "claude-sonnet-4-6", "client": anthropic_client, "api": "anthropic"}
     ]
