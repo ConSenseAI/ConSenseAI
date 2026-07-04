@@ -2332,13 +2332,13 @@ def fact_check(tweet_text, tweet_id, context=None, generate_only=False, verbose=
     # Models and their clients - Updated to include vision model
     models = [
         #lower tier (index 0-2)
-        {"name": "grok-4-1-fast-reasoning", "client": xai_client, "api": "xai"},
+        {"name": "grok-4.3", "client": xai_client, "api": "xai"},
         {"name": "gpt-5.4-mini", "client": openai_client, "api": "openai"},
         {"name": "claude-haiku-4-5", "client": anthropic_client, "api": "anthropic"},
         #higher tier (index 3-5)
         {"name": "grok-4.3", "client": xai_client, "api": "xai"},
         {"name": "gpt-5.5", "client": openai_client, "api": "openai"},
-        {"name": "claude-sonnet-4-6", "client": anthropic_client, "api": "anthropic"}
+        {"name": "claude-sonnet-5", "client": anthropic_client, "api": "anthropic"}
     ]
     
     # Use SystemRandom for cryptographically strong randomness
@@ -6343,7 +6343,7 @@ def fetch_and_process_community_notes(user_id=None, max_results=5, test_mode=Tru
             import random
             secure_random = random.SystemRandom()
             retry_model_list = [
-                {"name": "grok-4-1-fast-reasoning", "api": "xai"},
+                {"name": "grok-4.3", "api": "xai"},
                 {"name": "gpt-5.4-mini", "api": "openai"},
                 {"name": "claude-haiku-4-5", "api": "anthropic"}
             ]
