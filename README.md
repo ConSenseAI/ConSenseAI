@@ -6,7 +6,7 @@
 **Multi-model AI fact-checking bot for X/Twitter**  
 Combines Grok, GPT, and Claude to provide comprehensive, balanced responses to misinformation.
 
-🌐 **Website:** [ai-against-autocracy.org](https://ai-against-autocracy.org)  
+🌐 **Website:** [Consenseai.org](https://consenseai.org)  
 🐦 **Bot Account:** [@ConSenseAI](https://x.com/ConSenseAI)  
 💻 **Source:** [github.com/Nhorning/ConSenseAI](https://github.com/Nhorning/ConSenseAI)
 
