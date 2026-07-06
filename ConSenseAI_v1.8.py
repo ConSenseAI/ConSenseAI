@@ -2187,7 +2187,7 @@ def run_model(system_prompt, user_msg, model, verdict, max_tokens=250, context=N
                 # Enable extended thinking for Claude models if requested (improves reasoning but costs more tokens)
                 thinking_config = {}
                 adjusted_max_tokens = max_tokens
-                if model['api'] == "anthropic" and enable_extended_thinking:
+                if model['api'] == "anthropic" and enable_extended_thinking and "haiku" in model['name']:
                     thinking_budget = 1024
                     # max_tokens must be greater than thinking budget, so add them together
                     adjusted_max_tokens = max_tokens//5 + thinking_budget
@@ -2197,6 +2197,8 @@ def run_model(system_prompt, user_msg, model, verdict, max_tokens=250, context=N
                             "budget_tokens": thinking_budget
                         }
                     }
+                    # Newer models (sonnet-5, fable-5) use adaptive thinking which is always on;
+                    # they do not support thinking.type "enabled" — no config needed for them.
                 
                 response = model['client'].messages.create(
                     model=model['name'],
