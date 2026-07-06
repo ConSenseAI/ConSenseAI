@@ -2334,11 +2334,11 @@ def fact_check(tweet_text, tweet_id, context=None, generate_only=False, verbose=
         #lower tier (index 0-2)
         {"name": "grok-4.3", "client": xai_client, "api": "xai"},
         {"name": "gpt-5.4-mini", "client": openai_client, "api": "openai"},
-        {"name": "claude-haiku-4-5", "client": anthropic_client, "api": "anthropic"},
+        {"name": "claude-sonnet-5", "client": anthropic_client, "api": "anthropic"},
         #higher tier (index 3-5)
         {"name": "grok-4.3", "client": xai_client, "api": "xai"},
         {"name": "gpt-5.5", "client": openai_client, "api": "openai"},
-        {"name": "claude-sonnet-5", "client": anthropic_client, "api": "anthropic"}
+        {"name": "claude-fable-5", "client": anthropic_client, "api": "anthropic"}
     ]
     
     # Use SystemRandom for cryptographically strong randomness
