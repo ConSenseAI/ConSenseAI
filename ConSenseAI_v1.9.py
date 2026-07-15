@@ -2987,10 +2987,6 @@ def post_reflection_on_recent_bot_threads(n=10):
                         break
             
             summary_points.append(f"Thread {conv_id[:8]}:\n{thread_text}")
-            # aggregate the chain entries for context
-            for entry in chain:
-                if isinstance(entry, dict):
-                    aggregated_chain.append(entry)
 
         summary_context = "\n\n".join(summary_points)
         
@@ -3034,13 +3030,16 @@ def post_reflection_on_recent_bot_threads(n=10):
             "\nPost the text of the tweet only, without any additional commentary *Particularly* if you are in the final pass"
         )
 
-        # Only provide the ancestor_chain (the thread hierarchy) to the fact_check prompt
+        # `summary_context` already contains each selected conversation as a separate
+        # thread. Do not flatten their chains into one ancestor list: the normal
+        # hierarchy formatter indents every successive entry and would falsely show
+        # unrelated conversations as replies to one another.
         context = {
             'context_instructions': prompt,
-            'ancestor_chain': aggregated_chain,
+            'ancestor_chain': [],
             'thread_tweets': [],  # intentionally empty: reflect on threads only
             'quoted_tweets': [],
-            'original_tweet': aggregated_chain[0]['tweet'] if aggregated_chain else None,
+            'original_tweet': None,
         }
 
         reflection = fact_check(summary_context, tweet_id="reflection_summary", context=context, generate_only=True, enable_extended_thinking=args.enable_extended_thinking)
