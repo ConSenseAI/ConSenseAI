@@ -2335,12 +2335,12 @@ def fact_check(tweet_text, tweet_id, context=None, generate_only=False, verbose=
     models = [
         #lower tier (index 0-2)
         {"name": "grok-4.3", "client": xai_client, "api": "xai"},
-        {"name": "gpt-5.4-mini", "client": openai_client, "api": "openai"},
-        {"name": "claude-sonnet-5", "client": anthropic_client, "api": "anthropic"},
+        {"name": "gpt-5.6-luna", "client": openai_client, "api": "openai"},
+        {"name": "claude-haiku-4-5", "client": anthropic_client, "api": "anthropic"},
         #higher tier (index 3-5)
         {"name": "grok-4.5", "client": xai_client, "api": "xai"},
-        {"name": "gpt-5.5", "client": openai_client, "api": "openai"},
-        {"name": "claude-fable-5", "client": anthropic_client, "api": "anthropic"}
+        {"name": "gpt-5.6-sol", "client": openai_client, "api": "openai"},
+        {"name": "claude-sonnet-5", "client": anthropic_client, "api": "anthropic"}
     ]
     
     # Use SystemRandom for cryptographically strong randomness
