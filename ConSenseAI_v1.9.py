@@ -1625,13 +1625,26 @@ def count_bot_replies_by_user_in_conversation(conversation_id, bot_user_id, targ
     return count
 
 def save_bot_tweet(tweet_id, full_content):
-    """Save bot tweet content to JSON file"""
+    """Save bot tweet content to JSON file without letting CN entries evict replies."""
     tweets = load_bot_tweets()
     tweets[str(tweet_id)] = full_content
-    if len(tweets) > MAX_BOT_TWEETS:
-        # Remove oldest entries (keep most recent)
-        sorted_tweets = sorted(tweets.items(), key=lambda x: x[0], reverse=True)
-        tweets = dict(sorted_tweets[:MAX_BOT_TWEETS])
+
+    # Community Note tracking IDs use a ``cn_`` prefix while replies and
+    # reflections use numeric X snowflake IDs. Prune each group independently:
+    # reverse lexicographic sorting previously kept cn_ entries first and dropped
+    # every numeric reply/reflection once the CN group reached the cache limit.
+    metadata = {key: value for key, value in tweets.items() if str(key).startswith('_')}
+    normal_tweets = {key: value for key, value in tweets.items() if str(key).isdigit()}
+    cn_tweets = {key: value for key, value in tweets.items() if str(key).startswith('cn_')}
+
+    if len(normal_tweets) > MAX_BOT_TWEETS:
+        # X snowflake IDs increase over time, so keep the newest normal tweets.
+        normal_tweets = dict(sorted(normal_tweets.items(), key=lambda item: int(item[0]), reverse=True)[:MAX_BOT_TWEETS])
+    if len(cn_tweets) > MAX_BOT_TWEETS:
+        # cn_<snowflake> IDs retain the same chronological ordering by suffix.
+        cn_tweets = dict(sorted(cn_tweets.items(), key=lambda item: int(item[0][3:]), reverse=True)[:MAX_BOT_TWEETS])
+
+    tweets = {**normal_tweets, **cn_tweets, **metadata}
     try:
         with open(TWEETS_FILE, 'w') as f:
             json.dump(tweets, f, indent=2)
