@@ -2218,7 +2218,11 @@ def run_model(system_prompt, user_msg, model, verdict, max_tokens=250, context=N
                 
                 response = model['client'].messages.create(
                     model=model['name'],
-                    system=system_prompt['content'],
+                    system=[{
+                        "type": "text",
+                        "text": system_prompt['content'],
+                        "cache_control": {"type": "ephemeral"}
+                    }],
                     messages=messages,
                     max_tokens=adjusted_max_tokens,
                     tools=[{
@@ -2227,6 +2231,11 @@ def run_model(system_prompt, user_msg, model, verdict, max_tokens=250, context=N
                         }],
                     **thinking_config
                 )
+                
+                if verbose and hasattr(response, 'usage'):
+                    cache_created = getattr(response.usage, 'cache_creation_input_tokens', 0) or 0
+                    cache_read = getattr(response.usage, 'cache_read_input_tokens', 0) or 0
+                    print(f"[Claude Cache Debug] {model['name']}: cache_created={cache_created} tokens, cache_read={cache_read} tokens")
                 
                 # Debug: Log the full response structure to understand what we're getting
                 if verbose and thinking_config:
