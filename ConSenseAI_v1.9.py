@@ -2096,14 +2096,17 @@ def run_model(system_prompt, user_msg, model, verdict, max_tokens=250, context=N
             print(f"Running Model: {model['name']}")
             if model['api'] == "xai":
                 # xAI SDK call with Agent Tools API (web search + X search)
-                chat = model['client'].chat.create(
-                    model=model['name'],
-                    tools=[
+                chat_kwargs = {
+                    "model": model['name'],
+                    "tools": [
                         web_search(),
                         x_search(),
                     ],
                     #max_tokens=150
-                )
+                }
+                if model.get('reasoning_effort'):
+                    chat_kwargs["reasoning_effort"] = model['reasoning_effort']
+                chat = model['client'].chat.create(**chat_kwargs)
                 chat.append(system(system_prompt['content'])),
                 
                 if context and context.get('media'):
@@ -2347,7 +2350,7 @@ def fact_check(tweet_text, tweet_id, context=None, generate_only=False, verbose=
     # Models and their clients - Updated to include vision model
     models = [
         #lower tier (index 0-2)
-        {"name": "grok-4.3", "client": xai_client, "api": "xai"},
+        {"name": "grok-4.3", "client": xai_client, "api": "xai", "reasoning_effort": "low"},
         {"name": "gpt-5.6-luna", "client": openai_client, "api": "openai"},
         {"name": "claude-haiku-4-5", "client": anthropic_client, "api": "anthropic"},
         #higher tier (index 3-5)
