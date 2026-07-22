@@ -2129,6 +2129,11 @@ def run_model(system_prompt, user_msg, model, verdict, max_tokens=250, context=N
                     print(f"{model['name']} tool usage: {web_calls} web searches, {x_calls} X searches")
                 else:
                     print(f"{model['name']} tool usage: Not available")
+                # Cache hit debug: sticky routing (x-grok-conv-id) is set via metadata
+                # on the xai_sdk.Client itself (per model), not on chat.create().
+                if hasattr(response, 'usage') and response.usage is not None:
+                    cached_tokens = getattr(response.usage, 'cached_prompt_text_tokens', None)
+                    print(f"[Grok Cache Debug] {model['name']}: cached_prompt_text_tokens={cached_tokens}")
             #elif model['api'] == "openai":
                 # OpenAI SDK call
             #    response = model['client'].chat.completions.create(
@@ -2352,18 +2357,22 @@ def fact_check(tweet_text, tweet_id, context=None, generate_only=False, verbose=
     #print(user_msg)
 
     # Initialize clients
-    xai_client = xai_sdk.Client(api_key=keys.get('XAI_API_KEY'))
+    # Separate xAI clients per model with sticky x-grok-conv-id metadata so repeated
+    # calls to the same model route to the same server, maximizing cache hit rate
+    # (per xAI prompt caching docs: "Maximizing Cache Hits" -> gRPC API section).
+    xai_client_lower = xai_sdk.Client(api_key=keys.get('XAI_API_KEY'), metadata=(("x-grok-conv-id", "consenseai-grok-lower"),))
+    xai_client_higher = xai_sdk.Client(api_key=keys.get('XAI_API_KEY'), metadata=(("x-grok-conv-id", "consenseai-grok-higher"),))
     openai_client = openai.OpenAI(api_key=keys.get('CHATGPT_API_KEY'), base_url="https://api.openai.com/v1")
     anthropic_client = anthropic.Anthropic(api_key=keys.get('ANTHROPIC_API_KEY'))
 
     # Models and their clients - Updated to include vision model
     models = [
         #lower tier (index 0-2)
-        {"name": "grok-4.3", "client": xai_client, "api": "xai", "reasoning_effort": "low"},
+        {"name": "grok-4.3", "client": xai_client_lower, "api": "xai", "reasoning_effort": "low"},
         {"name": "gpt-5.6-luna", "client": openai_client, "api": "openai"},
         {"name": "claude-haiku-4-5", "client": anthropic_client, "api": "anthropic"},
         #higher tier (index 3-5)
-        {"name": "grok-4.5", "client": xai_client, "api": "xai"},
+        {"name": "grok-4.5", "client": xai_client_higher, "api": "xai"},
         {"name": "gpt-5.6-sol", "client": openai_client, "api": "openai"},
         {"name": "claude-sonnet-5", "client": anthropic_client, "api": "anthropic"}
     ]
@@ -6412,7 +6421,7 @@ def fetch_and_process_community_notes(user_id=None, max_results=5, test_mode=Tru
                         log_to_file("RETRY: Using single model with full conversation history")
                         
                         # Initialize model clients (only once per retry)
-                        xai_client = xai_sdk.Client(api_key=keys.get('XAI_API_KEY'))
+                        xai_client = xai_sdk.Client(api_key=keys.get('XAI_API_KEY'), metadata=(("x-grok-conv-id", "consenseai-grok-cn-retry"),))
                         openai_client = openai.OpenAI(api_key=keys.get('CHATGPT_API_KEY'), base_url="https://api.openai.com/v1")
                         anthropic_client = anthropic.Anthropic(api_key=keys.get('ANTHROPIC_API_KEY'))
                         
